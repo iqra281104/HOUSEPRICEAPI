@@ -1,1 +1,62 @@
+name: House Price API Deployment Pipeline
 
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+
+  build-and-test:
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+    # Download repository
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+
+
+    # Install Python
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+
+      with:
+        python-version: "3.10"
+
+
+
+    # Install libraries
+
+    - name: Install Dependencies
+
+      run:
+
+        pip install -r requirements.txt
+
+
+
+    # Check Python files
+
+    - name: Test Application
+
+      run:
+
+        python -m compileall .
+
+
+
+    # Train model check
+
+    - name: Run Training
+
+      run:
+
+        python train.py
