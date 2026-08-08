@@ -1,14 +1,29 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from src.predict import predict_house_price
-
+import time
+from monitoring.metrics import record_request, get_metrics
 app = FastAPI(
     title="House Price Prediction API",
     description="Predict house prices using a trained Linear Regression model.",
     version="1.0.0"
 )
+@app.middleware("http")
+async def monitor_requests(request: Request, call_next):
 
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    response_time = time.time() - start_time
+
+    record_request(
+        request.url.path,
+        response_time
+    )
+
+    return response
 
 class HouseFeatures(BaseModel):
 
@@ -82,3 +97,7 @@ def predict(data: HouseFeatures):
             status_code=500,
             detail=str(e)
         )
+@app.get("/metrics")
+def metrics():
+
+    return get_metrics()        
